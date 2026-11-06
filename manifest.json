@@ -1,0 +1,11 @@
+{
+    "id": "print-section",
+    "name": "Print Section",
+    "version": "1.0.0",
+    "minAppVersion": "1.12.0",
+    "description": "Print just part of a note — the selection, or the section under the cursor — to paper or PDF through the system print dialog, rendered as in Reading view, with page numbers.",
+    "author": "Charette AI Group",
+    "authorUrl": "https://charette-ai-group.github.io/web/",
+    "fundingUrl": "https://www.paypal.com/donate/?hosted_button_id=FEM4WLD7LHY36",
+    "isDesktopOnly": true
+}

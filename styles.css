@@ -1,0 +1,148 @@
+/* ==========================================================================
+   Print Section
+
+   A printout is rendered into  <body> > div.print.print-section-root  — the
+   shape of Obsidian's own Export to PDF — so Obsidian's print stylesheet
+   applies to it unchanged: it hides every child of <body> that is not .print,
+   lifts the app's fixed height and scroll clipping, and prints backgrounds.
+
+   Every rule below is either the on-screen hiding of that root, the cover
+   shown while a printout is prepared, or a print rule scoped under the root.
+   Nothing here touches ordinary printing or Obsidian's PDF export, which
+   copies plugin styles into its own window.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   On screen
+   -------------------------------------------------------------------------- */
+
+/* Off-screen rather than display:none: diagrams and charts measure their text
+   while they draw, and an element with no box gives them nothing to measure.
+   The width is roughly the printable width of A4 or Letter, so anything that
+   sizes itself while rendering sizes itself for the page. */
+body > .print-section-root {
+    position: absolute;
+    top: 0;
+    left: -10000px;
+    width: 180mm;
+    pointer-events: none;
+}
+
+.print-section-root .print-section-content {
+    /* The page margins are set by @page below; the view's own padding would
+       only add to them, and the margin setting should mean what it says. */
+    --file-margins: 0px;
+    /* The text size setting, as a factor of the editor's own size, so
+       headings, code and everything else sized in em follow it. */
+    font-size: calc(var(--font-preferred-size, var(--font-text-size, 16px)) * var(--print-section-scale, 1));
+}
+
+/* Covers the window while a printout renders and the print dialog is open.
+   With light colours on, the whole app switches to the light theme for that
+   time; the cover keeps the switch from flashing across the screen. Its
+   colours are pinned from the window as it was just before the switch. */
+.print-section-cover {
+    position: fixed;
+    inset: 0;
+    z-index: var(--layer-modal, 50);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--size-4-2, 8px);
+    background-color: var(--print-section-cover-bg, var(--background-primary));
+    color: var(--print-section-cover-fg, var(--text-normal));
+    font-family: var(--font-interface);
+    cursor: default;
+}
+
+.print-section-cover-label {
+    font-size: var(--font-ui-medium);
+}
+
+/* Only appears if the print dialog's closing went unnoticed and the cover
+   outstays it — then a click puts the window back. */
+.print-section-cover-hint {
+    font-size: var(--font-ui-small);
+    opacity: 0;
+    animation: print-section-reveal 0.4s ease 4s forwards;
+}
+
+@keyframes print-section-reveal {
+    to {
+        opacity: 0.6;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   On paper
+   -------------------------------------------------------------------------- */
+
+/* Named, so it applies to this plugin's printout and to nothing else. The
+   values come from custom properties the plugin sets on <html> while a
+   printout is in progress, and each falls back to nothing when unset. */
+@page print-section {
+    margin: var(--print-section-margin, 15mm);
+
+    @top-center {
+        content: var(--print-section-header, none);
+        font-family: var(--print-section-font, sans-serif);
+        font-size: 9pt;
+        color: #6b6b6b;
+    }
+
+    @bottom-center {
+        content: var(--print-section-footer, none);
+        font-family: var(--print-section-font, sans-serif);
+        font-size: 9pt;
+        color: #6b6b6b;
+    }
+}
+
+@media print {
+    body > .print-section-root {
+        position: static;
+        width: auto;
+        pointer-events: auto;
+        page: print-section;
+    }
+
+    /* "Background colours" off: let the printer drop shading to save ink.
+       Obsidian's print stylesheet asks for exact colours; this outranks it. */
+    .print.print-section-economy .markdown-preview-view {
+        -webkit-print-color-adjust: economy;
+        print-color-adjust: economy;
+    }
+
+    /* A heading is never left alone at the foot of a page. */
+    .print-section-root :is(h1, h2, h3, h4, h5, h6) {
+        break-after: avoid;
+        break-inside: avoid;
+    }
+
+    /* Short blocks move to the next page whole rather than splitting. Tables
+       are left free to split between rows — a long one has to — and the
+       browser repeats the header row at the top of each page. */
+    .print-section-root :is(pre, blockquote, .callout, figure, img, svg, tr, .math-block) {
+        break-inside: avoid;
+    }
+
+    .print-section-root :is(p, li) {
+        orphans: 2;
+        widows: 2;
+    }
+
+    /* Code too wide for the page wraps, rather than running off the edge. */
+    .print-section-root pre,
+    .print-section-root pre > code {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    /* Controls that only mean anything on screen. Specific enough to outrank
+       Obsidian's own rules for them, because the community directory's CSS
+       check rejects important declarations. */
+    .print-section-root .print-section-content :is(.copy-code-button, .edit-block-button, .collapse-indicator) {
+        display: none;
+    }
+}
