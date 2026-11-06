@@ -68,7 +68,7 @@ Sections are found from the note's live text, not from Obsidian's metadata cache
 
 ## Installation
 
-**From Obsidian (once listed):** Settings → Community plugins → Browse → search for "Print Section".
+**From Obsidian (recommended):** Settings → Community plugins → Browse → search for "Print Section".
 
 **Manual:** download `main.js`, `manifest.json` and `styles.css` from the [latest release](../../releases/latest) into `<vault>/.obsidian/plugins/print-section/`, then enable the plugin in Settings → Community plugins.
 
