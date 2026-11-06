@@ -4,6 +4,8 @@ Print **just part of a note** — the text you selected, or the section the curs
 
 Obsidian can export a whole note to PDF, but it cannot print, and it cannot print part of a note at all. This plugin renders exactly the part you choose the way Reading view does — callouts, tables, code, images, embeds, diagrams — and hands it to the system print dialog, where you pick a printer, or save it as a PDF.
 
+![The editor's right-click menu offering Print section "Budget" beside the Budget section of a note](docs/ss01-printSectionMenu.png)
+
 ## What it prints
 
 | You have… | It prints |
@@ -43,6 +45,10 @@ Sections are found from the note's live text, not from Obsidian's metadata cache
 - **Nothing that only works on screen.** Folded callouts print open, and fold arrows and copy buttons are left off.
 - **Named after the note.** The print job carries the note's name, and the section's, so that is what the print queue shows and what a PDF records as its title.
 - **Your CSS still applies.** The printout is built the way Obsidian's own PDF export builds one, so themes and snippets written for PDF export style it too, and a note's `cssclasses` carry over.
+
+The *Budget* section from the screenshot above, as it comes out of the printer, with the note and section at the top and the page number at the foot:
+
+![The printed Budget section in light colours: its table, callout and list, with "Kitchen renovation › Budget" at the top and "Page 1 of 1" at the foot](docs/ss02-printedSection.png)
 
 ## Settings
 
