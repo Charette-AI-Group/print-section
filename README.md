@@ -39,8 +39,9 @@ Sections are found from the note's live text, not from Obsidian's metadata cache
 
 - **Light colours.** Working in a dark theme? The printout uses Obsidian's light theme anyway, exactly as *Export to PDF* does, so a page is not filled with ink. While the printout is prepared, a cover keeps the theme switch from flashing across your screen.
 - **Page numbers and a header.** `3 / 7`, `Page 3 of 7` or just `3` at the foot of each page, and optionally the note's name — or the note and section — at the top.
-- **Sensible page breaks.** Headings stay with the text after them; callouts, code blocks, images and table rows are not split across pages; long tables repeat their header row on each page; over-long code lines wrap instead of running off the edge.
-- **A useful file name.** The print job is named after the note and section, so *Print to PDF* suggests `My Note - Budget 2026.pdf`.
+- **Sensible page breaks.** Headings stay with the text after them; callouts, code blocks, images and table rows are not split across pages; a table's header row stays with the rows below it, and long Markdown tables repeat it on each page; over-long code lines wrap instead of running off the edge.
+- **Nothing that only works on screen.** Folded callouts print open, and fold arrows and copy buttons are left off.
+- **Named after the note.** The print job carries the note's name, and the section's, so that is what the print queue shows and what a PDF records as its title.
 - **Your CSS still applies.** The printout is built the way Obsidian's own PDF export builds one, so themes and snippets written for PDF export style it too, and a note's `cssclasses` carry over.
 
 ## Settings
@@ -61,8 +62,9 @@ Sections are found from the note's live text, not from Obsidian's metadata cache
 
 - **Desktop only.** Printing goes through the operating system's print dialog, which Obsidian's mobile apps do not offer.
 - **The dialog is your system's.** Printer, copies, page range, paper size and orientation are chosen there. To get a PDF, choose *Microsoft Print to PDF* on Windows, or the **PDF** button on macOS.
+- **Obsidian waits for the dialog.** While the print dialog is open, Obsidian does not respond and shows *Preparing to print…*. If the dialog is nowhere to be seen, it is behind another window: bring it forward (Alt+Tab on Windows), then print or cancel.
 - **Diagrams, queries and embeds** that draw themselves after the note renders are waited for — until the page has been still for a moment, or five seconds at most.
-- **Reading view, just after the plugin loads.** A Reading-view selection is traced back to the note's text through the blocks Obsidian renders. A note that was already showing in Reading view when the plugin loaded cannot be traced until it renders again (switch notes, or toggle the view); until then, a selection there prints as it is displayed.
+- **Reading view selects whole blocks.** A selection there is traced back to the note's text, so every paragraph, list, table or embed it touches prints complete, even one it only starts or ends inside.
 
 ## Installation
 

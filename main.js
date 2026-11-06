@@ -405,8 +405,8 @@ function truncate(text, max) {
     return text.length > max ? text.slice(0, max - 1).trimEnd() + '…' : text;
 }
 
-// The print job's name doubles as the suggested file name when printing to
-// PDF, so it loses the characters no file name may hold.
+// The print job's name can end up as a file name (some PDF printers offer it
+// as one), so it loses the characters no file name may hold.
 function fileSafe(name) {
     return String(name).replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
@@ -563,7 +563,7 @@ class PrintJob {
         if (background) cover.style.setProperty(COVER_VAR.background, background);
         if (text) cover.style.setProperty(COVER_VAR.text, text);
         cover.createDiv({ cls: 'print-section-cover-label', text: 'Preparing to print…' });
-        cover.createDiv({ cls: 'print-section-cover-hint', text: 'Click to return to your note' });
+        cover.createDiv({ cls: 'print-section-cover-hint', text: 'Print dialog not showing? It may be behind another window.' });
         cover.addEventListener('click', this.cleanup);
     }
 
@@ -617,8 +617,8 @@ class PrintJob {
         set(PAGE_VAR.font, win.getComputedStyle(content).fontFamily || null);
     }
 
-    // The print queue shows the document's title, and Print to PDF offers it
-    // as the file name.
+    // The print queue shows the document's title, and a PDF printer records
+    // it as the PDF's title.
     retitle() {
         const { doc, request } = this;
         if (!request.title) return;
@@ -661,6 +661,8 @@ module.exports = class PrintSectionPlugin extends Plugin {
         // with a context that can say — at any later moment, edits included —
         // which lines of the note that block came from. Keeping the context
         // is what lets a Reading-view selection be traced back to the text.
+        // Registering one makes every open Reading view render again, so the
+        // blocks already on screen are seen too.
         this.blockContexts = new WeakMap();
         this.registerMarkdownPostProcessor((el, ctx) => {
             this.blockContexts.set(el, ctx);
@@ -765,9 +767,10 @@ module.exports = class PrintSectionPlugin extends Plugin {
     // there is traced back to the blocks it touches and printed whole; with
     // no selection, the section at the top of the window is the one in view.
     readingTarget(view) {
-        const lines = splitLines(view.getViewData());
+        const text = view.getViewData();
+        const lines = splitLines(text);
         const note = scanNote(lines);
-        const picked = this.readingSelection(view, lines.length);
+        const picked = this.readingSelection(view, text, lines.length);
         if (picked && picked.lines) {
             return {
                 kind: 'selection',
@@ -793,10 +796,10 @@ module.exports = class PrintSectionPlugin extends Plugin {
         };
     }
 
-    // The lines a Reading-view selection covers. If its blocks cannot be
-    // traced — the view rendered before this plugin loaded, so no contexts
-    // were kept — the selection is copied as it is displayed instead.
-    readingSelection(view, lineCount) {
+    // The lines a Reading-view selection covers. If neither end lies in a
+    // block of this note that can be traced, the selection is copied as it
+    // is displayed instead.
+    readingSelection(view, text, lineCount) {
         const container = view.previewMode && view.previewMode.containerEl;
         if (!container) return null;
         const selection = container.ownerDocument.getSelection();
@@ -804,8 +807,8 @@ module.exports = class PrintSectionPlugin extends Plugin {
         const range = selection.getRangeAt(0);
         if (!container.contains(range.commonAncestorContainer)) return null;
 
-        const first = this.blockLines(range.startContainer, container);
-        const last = this.blockLines(range.endContainer, container);
+        const first = this.blockLines(range.startContainer, container, text);
+        const last = this.blockLines(range.endContainer, container, text);
         if (first || last) {
             // An end outside every block lies in the title or properties above
             // the text, or past its end.
@@ -819,12 +822,16 @@ module.exports = class PrintSectionPlugin extends Plugin {
         return { fragment: range.cloneContents() };
     }
 
-    blockLines(node, stop) {
+    // The block of this note a node lies in, with its lines. A block inside
+    // an embed was rendered from the embedded note, and its line numbers count
+    // in that note's text, so it is passed over for the block holding the
+    // embed: the first whose text is this note's own.
+    blockLines(node, stop, text) {
         let el = node && node.nodeType === 1 ? node : node && node.parentElement;
         for (; el && el !== stop; el = el.parentElement) {
             const ctx = this.blockContexts.get(el);
             const info = ctx && ctx.getSectionInfo(el);
-            if (info) return info;
+            if (info && info.text === text) return info;
         }
         return null;
     }

@@ -337,12 +337,32 @@ test('Reading view: a selection is traced back to the blocks it touches', async 
     const blockA = container.createDiv();
     const blockB = container.createDiv();
     const process = plugin.postProcessors[0];
-    process(blockA, { getSectionInfo: () => ({ lineStart: 4, lineEnd: 4, text: '' }) });
-    process(blockB, { getSectionInfo: () => ({ lineStart: 6, lineEnd: 6, text: '' }) });
+    process(blockA, { getSectionInfo: () => ({ lineStart: 4, lineEnd: 4, text: NOTE }) });
+    process(blockB, { getSectionInfo: () => ({ lineStart: 6, lineEnd: 6, text: NOTE }) });
     readingSelection(doc, view, { nodeType: 3, parentElement: blockA.createEl('p') }, { nodeType: 3, parentElement: blockB });
 
     await plugin.printFromView(view);
     assert.equal(MarkdownRenderer.calls[0].markdown, 'Chapter text.\n## Part A\nA text.');
+});
+
+test('Reading view: a selection starting inside an embed starts at the block holding it', async () => {
+    // The embedded note's blocks are post-processed too, with line numbers
+    // that count in the embedded note — line 2 here, which in this note is
+    // the end of the front matter.
+    const { plugin, doc } = await setup();
+    const view = makeView(doc, { mode: 'preview' });
+    const container = view.previewMode.containerEl;
+    const host = container.createDiv();
+    const embedded = host.createDiv();
+    const blockB = container.createDiv();
+    const process = plugin.postProcessors[0];
+    process(host, { getSectionInfo: () => ({ lineStart: 6, lineEnd: 6, text: NOTE }) });
+    process(embedded, { getSectionInfo: () => ({ lineStart: 2, lineEnd: 2, text: '# Other\n\nEmbedded text.' }) });
+    process(blockB, { getSectionInfo: () => ({ lineStart: 8, lineEnd: 8, text: NOTE }) });
+    readingSelection(doc, view, { nodeType: 3, parentElement: embedded.createEl('p') }, { nodeType: 3, parentElement: blockB });
+
+    await plugin.printFromView(view);
+    assert.equal(MarkdownRenderer.calls[0].markdown, 'A text.\n## Part B\nB text.');
 });
 
 test('Reading view: blocks that cannot be traced print as displayed', async () => {

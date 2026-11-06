@@ -60,8 +60,10 @@ body > .print-section-root {
     font-size: var(--font-ui-medium);
 }
 
-/* Only appears if the print dialog's closing went unnoticed and the cover
-   outstays it — then a click puts the window back. */
+/* Appears only if the cover stays up for a while. Obsidian does not respond
+   while the print dialog is open, so that usually means the dialog is hidden
+   behind another window. Should the dialog's closing ever go unnoticed, a
+   click on the cover still puts the window back. */
 .print-section-cover-hint {
     font-size: var(--font-ui-small);
     opacity: 0;
@@ -127,6 +129,13 @@ body > .print-section-root {
         break-inside: avoid;
     }
 
+    /* A header row written as an ordinary row, as HTML tables often are, has
+       no <thead> to repeat it, so it is kept with the row below instead of
+       being left alone at the foot of a page. */
+    .print-section-root tr:not(:has(> td)) {
+        break-after: avoid;
+    }
+
     .print-section-root :is(p, li) {
         orphans: 2;
         widows: 2;
@@ -142,7 +151,7 @@ body > .print-section-root {
     /* Controls that only mean anything on screen. Specific enough to outrank
        Obsidian's own rules for them, because the community directory's CSS
        check rejects important declarations. */
-    .print-section-root .print-section-content :is(.copy-code-button, .edit-block-button, .collapse-indicator) {
+    .print-section-root .print-section-content :is(.copy-code-button, .edit-block-button, .collapse-indicator, .callout-fold) {
         display: none;
     }
 }
